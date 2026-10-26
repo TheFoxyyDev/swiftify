@@ -33,6 +33,7 @@ first image shows equalizer, tempo and pitch settings. second picture shows how 
   - [Windows](#windows)
 - [Stats](#stats)
 - [Command line](#command-line)
+- [License](#license)
 
 ## Before you start
 
@@ -284,3 +285,7 @@ on hyprland for example:
 bind = SUPER SHIFT, M, exec, swiftify --immersive
 bind = , XF86AudioPlay, exec, swiftify --play-pause
 ```
+
+## License
+
+swiftify is licensed under the gnu gpl v3 or later, see [LICENSE](LICENSE)
