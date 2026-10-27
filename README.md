@@ -53,18 +53,6 @@ you can download swiftify for your operating system at [https://shredos.dev](htt
 
 ## Tutorials
 
-### Russian interface
-
-Russian is available in **Settings → Appearance → Language** and switches live.
-Menus, dialogs, status messages, formatted playback errors, timer units, dates
-and numbers follow the selected language. Track metadata and user-created names
-are not translated. The fullscreen timer uses compact labels that fit its fixed
-segments, including narrow panels.
-
-`python3 tests/check_translations.py .` checks catalog uniqueness, placeholders
-and literal QML/C++ translation coverage. The catalog remains an embedded JSON
-resource; Qt Linguist is not required.
-
 ### "spotify could not load this track" (soloist)
 
 spotify refuses librespot the keys to decrypt songs on newer accounts (librespot's
