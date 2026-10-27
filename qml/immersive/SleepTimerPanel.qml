@@ -147,20 +147,20 @@ Item {
                 Stepper {
                     value: root.hours
                     maximum: 12
-                    unit: "h"
+                    unit: qsTr("h")
                     onStepped: (value) => root.hours = value
                 }
                 Stepper {
                     value: root.minutes
                     maximum: 59
-                    unit: "min"
+                    unit: qsTr("min")
                     onStepped: (value) => root.minutes = value
                 }
                 Stepper {
                     visible: Settings.debuggingEnabled
                     value: root.seconds
                     maximum: 59
-                    unit: "s"
+                    unit: qsTr("s")
                     onStepped: (value) => root.seconds = value
                 }
             }
@@ -218,6 +218,7 @@ Item {
 
         SegmentedControl {
             id: fadePicker
+            objectName: "sleepTimerFadePicker"
             width: parent.width
             segmentWidth: (width - 2 * inset) / 3
             scheme: root.scheme

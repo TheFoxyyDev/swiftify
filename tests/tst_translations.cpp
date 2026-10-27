@@ -76,6 +76,26 @@ private slots:
         QTest::newRow("zero") << 0 << QStringLiteral("0 треков");
     }
 
+    void translatesFormattedErrorsWithoutChangingMetadata()
+    {
+        QTemporaryDir directory;
+        Settings settings(directory.filePath(QStringLiteral("settings.ini")));
+        settings.setLanguage(QStringLiteral("ru"));
+        Translations translations(&settings);
+        QCOMPARE(QCoreApplication::translate("Errors", "Spotify token exchange failed: Connection refused"),
+                 QStringLiteral("Не удалось получить токен Spotify: Соединение отклонено"));
+        QCOMPARE(QCoreApplication::translate("Errors", "Soloist stopped (exit code 10). Connection refused"),
+                 QStringLiteral("Soloist завершил работу с кодом 10. Соединение отклонено"));
+        QCOMPARE(QCoreApplication::translate("Errors", "Spotify API request failed: /Users/test/Music"),
+                 QStringLiteral("Ошибка запроса к API Spotify: /Users/test/Music"));
+        QCOMPARE(QCoreApplication::translate("metadata", "Could not create a playlist"),
+                 QStringLiteral("Could not create a playlist"));
+        QCOMPARE(QCoreApplication::translate("Errors", "custom playlist"), QStringLiteral("custom playlist"));
+        settings.setLanguage(QStringLiteral("en"));
+        QCOMPARE(QCoreApplication::translate("Soloist", "Could not save the API key: Connection refused"),
+                 QStringLiteral("Could not save the API key: Connection refused"));
+    }
+
     void russianPluralForms()
     {
         if (!kRussianTranslationEnabled) {

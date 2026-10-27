@@ -151,6 +151,75 @@ private:
     using Rig = swiftify::testing::ViewRig;
 
 private slots:
+    void englishLabelsKeepTheirOriginalWording()
+    {
+        Rig rig;
+        rig.settings.setLanguage(QStringLiteral("en"));
+        Translations translations(&rig.settings);
+        QQmlComponent phrase(&rig.engine);
+        phrase.setData("import QtQml\nimport Swiftify\n"
+                       "QtObject { property string text: UiState.catchphrase }", QUrl());
+        std::unique_ptr<QObject> object(phrase.create());
+        QVERIFY2(object, qPrintable(phrase.errorString()));
+        QCOMPARE(object->property("text").toString(), QStringLiteral("i mean i guess bro"));
+
+        const auto panel = rig.show(QStringLiteral("SleepTimerPanel"));
+        QVERIFY(panel);
+        QList<QQuickItem *> queue{panel.get()};
+        QStringList labels;
+        for (qsizetype index = 0; index < queue.size(); ++index) {
+            auto *item = queue.at(index);
+            queue.append(item->childItems());
+            if (item->objectName() == QLatin1StringView("segmentLabel")) labels.append(item->property("text").toString());
+        }
+        QCOMPARE(labels, QStringList({QStringLiteral("None"), QStringLiteral("Last 10 Seconds"), QStringLiteral("Whole Timer")}));
+
+        const auto stats = rig.show(QStringLiteral("StatsView"));
+        QVERIFY(stats);
+        QString hour;
+        QVERIFY(QMetaObject::invokeMethod(stats.get(), "hourName", Q_RETURN_ARG(QString, hour), Q_ARG(int, 13)));
+        QCOMPARE(hour, QStringLiteral("1 PM"));
+    }
+
+    void russianSleepTimerLabelsFitTheirSegments()
+    {
+        fonts::loadIconFont();
+        Rig rig;
+        rig.window->setColor(QColor(QStringLiteral("#423d58")));
+        rig.settings.setLanguage(QStringLiteral("ru"));
+        Translations translations(&rig.settings);
+        const auto panel = rig.show(QStringLiteral("SleepTimerPanel"));
+        QVERIFY(panel);
+        auto *picker = panel->findChild<QQuickItem *>(QStringLiteral("sleepTimerFadePicker"));
+        QVERIFY(picker);
+        for (int width : {380, 300}) {
+            panel->setWidth(width);
+            Rig::settle();
+            rig.render();
+            if (width == 380) {
+                const QString path = qEnvironmentVariable("SWIFTIFY_TEST_SCREENSHOT");
+                if (!path.isEmpty()) {
+                    const qreal ratio = rig.window->devicePixelRatio();
+                    QVERIFY(rig.render().copy(0, 0, qRound(width * ratio),
+                                              qRound((panel->implicitHeight() + 8) * ratio)).save(path));
+                }
+            }
+            QList<QQuickItem *> labels;
+            QList<QQuickItem *> queue{picker};
+            for (qsizetype index = 0; index < queue.size(); ++index) {
+                auto *item = queue.at(index);
+                queue.append(item->childItems());
+                if (item->objectName() == QLatin1StringView("segmentLabel")) labels.append(item);
+            }
+            QCOMPARE(labels.size(), 3);
+            QCOMPARE(labels.at(1)->property("text").toString(), QStringLiteral("За 10 с"));
+            for (auto *label : labels) {
+                QVERIFY(label->width() > 0);
+                QVERIFY(label->property("contentWidth").toReal() <= label->width() + 1);
+            }
+        }
+    }
+
     void fullScreenVisualizerCanBeDisabledIndependently()
     {
         Rig rig;
