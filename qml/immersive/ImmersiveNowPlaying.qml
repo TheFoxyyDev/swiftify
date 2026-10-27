@@ -392,11 +392,13 @@ Item {
             Row {
                 id: volume
                 anchors.horizontalCenter: parent.horizontalCenter
+                anchors.horizontalCenterOffset: -muteButton.width / 2
                 spacing: 10
                 opacity: root.controlsOpacity
                 enabled: root.controlsOpacity > 0
 
                 IconButton {
+                    id: muteButton
                     anchors.verticalCenter: parent.verticalCenter
                     scheme: root.scheme
                     symbol: Player.volume <= 0.01 ? "volume_off" : (Player.volume <= 0.5 ? "volume_down" : "volume_up")
@@ -409,7 +411,7 @@ Item {
                 }
                 StyledSlider {
                     anchors.verticalCenter: parent.verticalCenter
-                    width: Math.min(Math.max(0, progress.width - 40), 300)
+                    width: Math.max(0, Math.min(Math.max(0, progress.width - 40), 300) - muteButton.width)
                     scheme: root.scheme
                     trackThickness: 8
                     handleLength: 20
