@@ -151,6 +151,36 @@ private:
     using Rig = swiftify::testing::ViewRig;
 
 private slots:
+    void englishLabelsKeepTheirOriginalWording()
+    {
+        Rig rig;
+        rig.settings.setLanguage(QStringLiteral("en"));
+        Translations translations(&rig.settings);
+        QQmlComponent phrase(&rig.engine);
+        phrase.setData("import QtQml\nimport Swiftify\n"
+                       "QtObject { property string text: UiState.catchphrase }", QUrl());
+        std::unique_ptr<QObject> object(phrase.create());
+        QVERIFY2(object, qPrintable(phrase.errorString()));
+        QCOMPARE(object->property("text").toString(), QStringLiteral("i mean i guess bro"));
+
+        const auto panel = rig.show(QStringLiteral("SleepTimerPanel"));
+        QVERIFY(panel);
+        QList<QQuickItem *> queue{panel.get()};
+        QStringList labels;
+        for (qsizetype index = 0; index < queue.size(); ++index) {
+            auto *item = queue.at(index);
+            queue.append(item->childItems());
+            if (item->objectName() == QLatin1StringView("segmentLabel")) labels.append(item->property("text").toString());
+        }
+        QCOMPARE(labels, QStringList({QStringLiteral("None"), QStringLiteral("Last 10 Seconds"), QStringLiteral("Whole Timer")}));
+
+        const auto stats = rig.show(QStringLiteral("StatsView"));
+        QVERIFY(stats);
+        QString hour;
+        QVERIFY(QMetaObject::invokeMethod(stats.get(), "hourName", Q_RETURN_ARG(QString, hour), Q_ARG(int, 13)));
+        QCOMPARE(hour, QStringLiteral("1 PM"));
+    }
+
     void russianSleepTimerLabelsFitTheirSegments()
     {
         fonts::loadIconFont();

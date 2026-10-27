@@ -230,8 +230,8 @@ Item {
             enabled: !Player.sleepTimerRunning
             opacity: enabled ? 1 : 0.38
             segments: [
-                Segment { text: qsTr("No fade") },
-                Segment { text: qsTr("Last 10 s") },
+                Segment { text: qsTr("None") },
+                Segment { text: qsTr("Last 10 Seconds") },
                 Segment { text: qsTr("Whole Timer") }
             ]
             onActivated: (index) => Settings.sleepTimerFade = root.fades[index]

@@ -42,7 +42,9 @@ Flickable {
         return top + height > root.contentY - slack && top < root.contentY + root.height + slack
     }
     function hourName(hour: int): string {
-        return new Date(2000, 0, 1, hour).toLocaleTimeString(Format.locale, "HH:mm")
+        const russian = Format.locale.name.startsWith("ru")
+        const time = new Date(2000, 0, 1, hour).toLocaleTimeString(Format.locale, russian ? "HH:mm" : "h AP")
+        return russian ? time : time.replace(":00", "")
     }
     /// "1,284 plays", "3 hr 5 min" when ranking by time, or "" when the
     /// source left both out

@@ -37,7 +37,7 @@ Item {
         scheme: root.scheme
         symbol: "lyrics"
         title: qsTr("Lyrics Unavailable")
-        description: Player.lyricsMessage.length > 0 ? qsTranslate("Errors", Player.lyricsMessage) : qsTr("Lyrics are not available for this track.")
+        description: Player.lyricsMessage.length > 0 ? qsTranslate("Errors", Player.lyricsMessage) : UiState.catchphrase
     }
 
     ListView {
