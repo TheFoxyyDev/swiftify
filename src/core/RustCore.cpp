@@ -296,6 +296,11 @@ void RustCore::stopLiveBuffer()
     swiftify_core_stop_live(m_core);
 }
 
+void RustCore::analyseLive(const float *samples, qsizetype count, float outputGain)
+{
+    swiftify_core_analyse_live(m_core, samples, size_t(std::max<qsizetype>(count, 0)), outputGain);
+}
+
 void RustCore::setSpectrumEnabled(bool enabled)
 {
     swiftify_core_set_spectrum_enabled(m_core, enabled);

@@ -138,6 +138,11 @@ void swiftify_live_buffer_push(const SwiftifyLiveBuffer *buffer, const float *sa
  * whatever played; one already playing carries on */
 char *swiftify_core_play_live(const SwiftifyCore *core, const SwiftifyLiveBuffer *buffer);
 void swiftify_core_stop_live(const SwiftifyCore *core);
+/* hands interleaved stereo audio, heard at output_gain of its full level, to
+ * the spectrum alone, for audio another program plays to the speakers
+ * itself. may be called from any thread. */
+void swiftify_core_analyse_live(const SwiftifyCore *core, const float *samples, size_t count,
+                                float output_gain);
 
 #ifdef __cplusplus
 }

@@ -130,6 +130,12 @@ impl SharedSpectrum {
         self.enabled.load(Ordering::Relaxed)
     }
 
+    /// analysis windows queued so far
+    #[cfg(test)]
+    pub(crate) fn queued(&self) -> u64 {
+        self.sequence.load(Ordering::Relaxed)
+    }
+
     pub(crate) fn levels(&self) -> Vec<f32> {
         self.levels
             .lock()

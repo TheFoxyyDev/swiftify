@@ -59,6 +59,7 @@ public:
     bool playLiveBuffer(SwiftifyLiveBuffer *buffer) override;
     void stopLiveBuffer() override;
     quint32 liveOutputRate() const override;
+    void analyseLive(const float *samples, qsizetype count, float outputGain) override;
 
     void setSpectrumEnabled(bool enabled) override;
     int spectrumLevels(float *out, int capacity) const override;
