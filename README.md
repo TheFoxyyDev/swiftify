@@ -53,7 +53,7 @@ you can download swiftify for your operating system at [https://shredos.dev](htt
 
 ## Tutorials
 
-### "spotify could not load this track" (soloist)
+### "spotify will not play this track" (soloist)
 
 spotify refuses librespot the keys to decrypt songs on newer accounts (librespot's
 logs say `error audio key 0 1`), so every song fails. swiftify can play
