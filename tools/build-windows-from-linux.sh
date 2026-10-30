@@ -1,4 +1,20 @@
 #!/usr/bin/env bash
+# Swiftify, a spotify player for desktop
+# Copyright (C) 2026  shred0s
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 # cross-builds a self-contained windows x86_64 folder and zip of swiftify from
 # linux, downloading the matching windows mingw qt kit from download.qt.io on
 # the first run so nothing has to be installed or built on windows
