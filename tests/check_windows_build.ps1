@@ -83,6 +83,7 @@ function Invoke-Native {
                 $project = Split-Path -Leaf $build
                 if ($project -eq 'swiftify') {
                     New-FixtureFile "$prefix\bin\swiftify.exe"
+                    New-FixtureFile "$prefix\share\licenses\swiftify\LICENSE"
                 } else {
                     New-FixtureFile "$prefix\bin\$project.dll"
                 }
@@ -116,6 +117,7 @@ try {
     $parameters = @{ QtPath = $qtPath; MingwPath = $mingwPath; BuildRoot = $buildRoot; InstallPrefix = $installPrefix; Jobs = 2 }
     Invoke-WindowsBuild @parameters
     Assert-True (Test-Path -LiteralPath "$installPrefix\bin\swiftify.exe") 'Swiftify was not installed.'
+    Assert-True (Test-Path -LiteralPath "$installPrefix\share\licenses\swiftify\LICENSE") 'The license was not installed.'
     Assert-True (Test-Path -LiteralPath "$installPrefix\bin\qtkeychain.dll") 'QtKeychain runtime was not deployed.'
     Assert-True (Test-Path -LiteralPath "$installPrefix\bin\qcoro.dll") 'QCoro runtime was not deployed.'
     Assert-True ((Get-Content -LiteralPath "$installPrefix\bin\libstdc++-6.dll" -Raw).Trim() -eq 'selected compiler runtime') 'The selected compiler runtime must replace the deployment tool runtime.'

@@ -255,6 +255,9 @@ function Invoke-WindowsBuild {
         Invoke-Native $cmake (@('-S', $sourceRoot, '-B', $appBuild) + $commonOptions + @("-DRust_TOOLCHAIN=$rustToolchain", "-DRust_CARGO_TARGET=$rustTarget", "-DCMAKE_INSTALL_PREFIX=$($InstallPrefix.Replace('\', '/'))")) | Out-Host
         Invoke-Native $cmake @('--build', $appBuild, '--parallel', "$Jobs") | Out-Host
         Invoke-Native $cmake @('--install', $appBuild) | Out-Host
+        if (-not (Test-Path -LiteralPath (Join-Path $InstallPrefix 'share\licenses\swiftify\LICENSE') -PathType Leaf)) {
+            throw 'The license was not installed.'
+        }
         $installBin = Join-Path $InstallPrefix 'bin'
         $executable = Join-Path $installBin 'swiftify.exe'
         Invoke-Native $deployQt @('--release', '--force', '--compiler-runtime', '--qmldir', (Join-Path $sourceRoot 'qml'), $executable) | Out-Host

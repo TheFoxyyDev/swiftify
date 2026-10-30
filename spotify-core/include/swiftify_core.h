@@ -45,7 +45,7 @@ bool swiftify_core_take_completion(const SwiftifyCore *core, uint64_t *request_i
  * SWIFTIFY_CORE_SUPERSEDED, having started no sound. */
 #define SWIFTIFY_CORE_SUPERSEDED "the request was replaced by a newer one"
 /* a play call for a track spotify will not give this account fails with this */
-#define SWIFTIFY_CORE_UNAVAILABLE "Spotify could not load this track."
+#define SWIFTIFY_CORE_UNAVAILABLE "Spotify will not play this track."
 
 void swiftify_core_connect(const SwiftifyCore *core, uint64_t request_id, const char *access_token,
                            const char *client_id);

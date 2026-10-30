@@ -129,6 +129,7 @@ PATH="$WORK/tools:$PATH" "$WORK/tools/linuxdeploy-x86_64.AppImage" \
 [[ -f "$APPDIR/usr/bin/qt.conf" ]] || fail "linuxdeploy wrote no qt.conf"
 [[ -f "$APPDIR/usr/plugins/platforms/libqwayland.so" ]] || fail "the wayland platform plugin is missing"
 [[ -f "$APPDIR/usr/plugins/tls/libqopensslbackend.so" ]] || fail "the openssl tls plugin is missing"
+[[ -f "$APPDIR/usr/share/licenses/swiftify/LICENSE" ]] || fail "the license is missing"
 
 # what the desktop itself is built on comes from the machine, never the
 # build's ubuntu. an old libsystemd or glib in lib/ is found first by the

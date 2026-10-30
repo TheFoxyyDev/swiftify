@@ -203,7 +203,7 @@ pub const SUPERSEDED: &str = "the request was replaced by a newer one";
 
 /// what a play request ends with when spotify will not give this account the
 /// track (SWIFTIFY_CORE_UNAVAILABLE in the c header). the front end skips it
-pub const UNAVAILABLE: &str = "Spotify could not load this track.";
+pub const UNAVAILABLE: &str = "Spotify will not play this track.";
 
 pub struct SpotifyCore {
     state: Mutex<SpotifyState>,
@@ -235,10 +235,16 @@ impl Default for SpotifyCore {
     }
 }
 
+/// librespot and the core log through the log crate, which drops everything
+/// until a logger is set. this sets one that reads RUST_LOG (Logging.cpp fills
+/// it in when logging is on), unless the host set its own first
+fn start_logging() {
+    let _ = env_logger::Builder::from_default_env().try_init();
+}
+
 impl SpotifyCore {
     pub fn new() -> Self {
-        let _ = env_logger::try_init();
-
+        start_logging();
         Self {
             state: Mutex::new(SpotifyState::default()),
             playback_generation: watch::Sender::new(0),
@@ -624,7 +630,6 @@ impl SpotifyCore {
             match event {
                 PlayerEvent::Playing { track_id, .. } if track_id == uri => return Ok(()),
                 PlayerEvent::Unavailable { track_id, .. } if track_id == uri => {
-                    // previous error was incredibly misleading, so i changed it to a generic error
                     return Err(UNAVAILABLE.to_owned());
                 }
                 PlayerEvent::Stopped { track_id, .. } if track_id == uri => {
@@ -725,7 +730,6 @@ impl SpotifyCore {
                 PlayerEvent::Unavailable { track_id, .. } if track_id == uri => {
                     incoming.set_gain(0.0);
                     incoming.player.stop();
-                    // previous error was incredibly misleading, so i changed it to a generic error
                     return Err(UNAVAILABLE.to_owned());
                 }
                 PlayerEvent::Stopped { track_id, .. } if track_id == uri => {

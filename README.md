@@ -41,6 +41,7 @@ you can download swiftify for your operating system at [https://shredos.dev](htt
   - [Windows](#windows)
 - [Stats](#stats)
 - [Command line](#command-line)
+- [License](#license)
 
 ## Before you start
 
@@ -53,7 +54,7 @@ you can download swiftify for your operating system at [https://shredos.dev](htt
 
 ## Tutorials
 
-### "spotify could not load this track" (soloist)
+### "spotify will not play this track" (soloist)
 
 spotify refuses librespot the keys to decrypt songs on newer accounts (librespot's
 logs say `error audio key 0 1`), so every song fails. swiftify can play
@@ -292,3 +293,7 @@ on hyprland for example:
 bind = SUPER SHIFT, M, exec, swiftify --immersive
 bind = , XF86AudioPlay, exec, swiftify --play-pause
 ```
+
+## License
+
+swiftify is licensed under the gnu gpl v3 or later, see [LICENSE](LICENSE)
