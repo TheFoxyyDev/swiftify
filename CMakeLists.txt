@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(Swiftify
-    VERSION 0.24.1
+    VERSION 0.24.2
     DESCRIPTION "A native Spotify client"
     LANGUAGES C CXX)
 
@@ -414,6 +414,8 @@ if(APPLE)
             PROPERTIES MACOSX_PACKAGE_LOCATION Resources/fonts)
         target_sources(swiftify PRIVATE ${SWIFTIFY_INTERFACE_FONT} ${SWIFTIFY_INTERFACE_FONT_LICENSE})
     endif()
+    set_source_files_properties(LICENSE PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    target_sources(swiftify PRIVATE LICENSE)
     set_target_properties(swiftify PROPERTIES
         MACOSX_BUNDLE ON
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/packaging/macos/Info.plist.in
@@ -443,6 +445,11 @@ endif()
 install(TARGETS swiftify
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     BUNDLE DESTINATION .)
+# the gpl has to go out with every copy of swiftify, so the tarball and the
+# windows zip carry it here and the app bundle in its resources
+if(NOT APPLE)
+    install(FILES LICENSE DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/swiftify)
+endif()
 if(NOT APPLE AND NOT WIN32)
     # the desktop entry's name is the wayland app id (see main.cpp), which is
     # how hyprland and the tray match the window to its icon

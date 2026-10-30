@@ -269,6 +269,8 @@ while :; do
     $copied || break
 done
 
+[[ -f "$STAGE/share/licenses/swiftify/LICENSE" ]] || fail "the license is missing"
+
 cat > "$BIN/qt.conf" <<'EOF'
 [Paths]
 Plugins = .

@@ -131,6 +131,7 @@ done < <(find "$APP" -type f -print0)
 [[ -d "$APP/Contents/PlugIns/tls" ]] || fail "the tls plugins are missing"
 [[ -f "$APP/Contents/PlugIns/platforms/libqcocoa.dylib" ]] || fail "the cocoa platform plugin is missing"
 [[ -d "$APP/Contents/Resources/qml/QtQuick" ]] || fail "qt's qml modules are missing"
+[[ -f "$APP/Contents/Resources/LICENSE" ]] || fail "the license is missing"
 
 # the dmg opens to the app beside a link to applications. hdiutil sometimes
 # finds the volume busy on ci, so it gets a few tries
