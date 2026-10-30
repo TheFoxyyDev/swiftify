@@ -252,11 +252,16 @@ function Invoke-WindowsBuild {
 
         Write-Host 'Building Swiftify...'
         $appBuild = Join-Path $buildDirectory 'swiftify'
-        Invoke-Native $cmake (@('-S', $sourceRoot, '-B', $appBuild) + $commonOptions + @("-DRust_TOOLCHAIN=$rustToolchain", "-DRust_CARGO_TARGET=$rustTarget", "-DCMAKE_INSTALL_PREFIX=$($InstallPrefix.Replace('\', '/'))")) | Out-Host
+        Invoke-Native $cmake (@('-S', $sourceRoot, '-B', $appBuild) + $commonOptions + @("-DRust_TOOLCHAIN=$rustToolchain", "-DRust_CARGO_TARGET=$rustTarget", '-DSWIFTIFY_BUNDLED_QT=ON', "-DCMAKE_INSTALL_PREFIX=$($InstallPrefix.Replace('\', '/'))")) | Out-Host
         Invoke-Native $cmake @('--build', $appBuild, '--parallel', "$Jobs") | Out-Host
         Invoke-Native $cmake @('--install', $appBuild) | Out-Host
         if (-not (Test-Path -LiteralPath (Join-Path $InstallPrefix 'share\licenses\swiftify\LICENSE') -PathType Leaf)) {
             throw 'The license was not installed.'
+        }
+        foreach ($license in @('material-color-utilities.LICENSE', 'rounded-polygon-qmljs.LICENSE', 'material-symbols.LICENSE', 'rust-crates.LICENSE', 'qt.LICENSE', 'qt.NOTICE', 'qtkeychain.LICENSE', 'qcoro.LICENSE')) {
+            if (-not (Test-Path -LiteralPath (Join-Path $InstallPrefix "share\licenses\swiftify\$license") -PathType Leaf)) {
+                throw "$license was not installed."
+            }
         }
         $installBin = Join-Path $InstallPrefix 'bin'
         $executable = Join-Path $installBin 'swiftify.exe'

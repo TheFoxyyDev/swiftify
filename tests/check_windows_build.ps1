@@ -29,6 +29,7 @@ $script:failBuild = $false
 $script:msvcInitializations = 0
 $script:rustToolchains = @{}
 $script:compilerVersion = '15.1.0'
+$script:thirdPartyLicenses = @('material-color-utilities.LICENSE', 'rounded-polygon-qmljs.LICENSE', 'material-symbols.LICENSE', 'rust-crates.LICENSE', 'qt.LICENSE', 'qt.NOTICE', 'qtkeychain.LICENSE', 'qcoro.LICENSE')
 
 function New-FixtureFile {
     param([string]$Path, [string]$Content = 'fixture')
@@ -84,6 +85,9 @@ function Invoke-Native {
                 if ($project -eq 'swiftify') {
                     New-FixtureFile "$prefix\bin\swiftify.exe"
                     New-FixtureFile "$prefix\share\licenses\swiftify\LICENSE"
+                    foreach ($license in $script:thirdPartyLicenses) {
+                        New-FixtureFile "$prefix\share\licenses\swiftify\$license"
+                    }
                 } else {
                     New-FixtureFile "$prefix\bin\$project.dll"
                 }
@@ -118,6 +122,10 @@ try {
     Invoke-WindowsBuild @parameters
     Assert-True (Test-Path -LiteralPath "$installPrefix\bin\swiftify.exe") 'Swiftify was not installed.'
     Assert-True (Test-Path -LiteralPath "$installPrefix\share\licenses\swiftify\LICENSE") 'The license was not installed.'
+    foreach ($license in $script:thirdPartyLicenses) {
+        Assert-True (Test-Path -LiteralPath "$installPrefix\share\licenses\swiftify\$license") "$license was not installed."
+    }
+    Assert-True (@($script:invocations | Where-Object { $_.Arguments -contains '-DSWIFTIFY_BUNDLED_QT=ON' }).Count -eq 1) 'The bundled Qt must have its license installed.'
     Assert-True (Test-Path -LiteralPath "$installPrefix\bin\qtkeychain.dll") 'QtKeychain runtime was not deployed.'
     Assert-True (Test-Path -LiteralPath "$installPrefix\bin\qcoro.dll") 'QCoro runtime was not deployed.'
     Assert-True ((Get-Content -LiteralPath "$installPrefix\bin\libstdc++-6.dll" -Raw).Trim() -eq 'selected compiler runtime') 'The selected compiler runtime must replace the deployment tool runtime.'

@@ -95,7 +95,7 @@ build_dependency qcoro https://github.com/qcoro/qcoro.git v0.13.0 \
     -DUSE_QT_VERSION=6 -DQCORO_WITH_QTDBUS=OFF -DQCORO_WITH_QTWEBSOCKETS=OFF -DQCORO_WITH_QTQUICK=OFF \
     -DQCORO_WITH_QML=OFF -DQCORO_WITH_QTTEST=OFF -DQCORO_BUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF
 
-cmake -S "$SOURCE" -B "$WORK/swiftify" "${common[@]}" -DCMAKE_INSTALL_PREFIX=/usr
+cmake -S "$SOURCE" -B "$WORK/swiftify" "${common[@]}" -DCMAKE_INSTALL_PREFIX=/usr -DSWIFTIFY_BUNDLED_QT=ON
 cmake --build "$WORK/swiftify" --parallel "$JOBS"
 rm -rf "${APPDIR:?}"
 DESTDIR="$APPDIR" cmake --install "$WORK/swiftify"
@@ -130,6 +130,10 @@ PATH="$WORK/tools:$PATH" "$WORK/tools/linuxdeploy-x86_64.AppImage" \
 [[ -f "$APPDIR/usr/plugins/platforms/libqwayland.so" ]] || fail "the wayland platform plugin is missing"
 [[ -f "$APPDIR/usr/plugins/tls/libqopensslbackend.so" ]] || fail "the openssl tls plugin is missing"
 [[ -f "$APPDIR/usr/share/licenses/swiftify/LICENSE" ]] || fail "the license is missing"
+for license in material-color-utilities.LICENSE rounded-polygon-qmljs.LICENSE material-symbols.LICENSE \
+    rust-crates.LICENSE qt.LICENSE qt.NOTICE qtkeychain.LICENSE qcoro.LICENSE; do
+    [[ -f "$APPDIR/usr/share/licenses/swiftify/$license" ]] || fail "$license is missing"
+done
 
 # what the desktop itself is built on comes from the machine, never the
 # build's ubuntu. an old libsystemd or glib in lib/ is found first by the

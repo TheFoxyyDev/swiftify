@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(Swiftify
-    VERSION 0.24.3
+    VERSION 0.24.4
     DESCRIPTION "A native Spotify client"
     LANGUAGES C CXX)
 
@@ -172,6 +172,37 @@ if(SWIFTIFY_DOWNLOAD_INTERFACE_FONT)
         install(FILES ${SWIFTIFY_INTERFACE_FONT} ${SWIFTIFY_INTERFACE_FONT_LICENSE}
             DESTINATION ${CMAKE_INSTALL_DATADIR}/swiftify/fonts)
     endif()
+endif()
+
+# --- licences ------------------------------------------------------------------
+
+# the code built into swiftify or bundled with it, whose licences go out with
+# every copy beside its own. they're copied under their installed names first,
+# as the app bundle can't rename what it carries
+set(SWIFTIFY_LICENSE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/licenses)
+configure_file(third_party/material-color-utilities/LICENSE
+    ${SWIFTIFY_LICENSE_DIRECTORY}/material-color-utilities.LICENSE COPYONLY)
+configure_file(third_party/rounded-polygon-qmljs/LICENSE
+    ${SWIFTIFY_LICENSE_DIRECTORY}/rounded-polygon-qmljs.LICENSE COPYONLY)
+set(SWIFTIFY_THIRD_PARTY_LICENSES
+    ${SWIFTIFY_LICENSE_DIRECTORY}/material-color-utilities.LICENSE
+    ${SWIFTIFY_LICENSE_DIRECTORY}/rounded-polygon-qmljs.LICENSE
+    # the rust crates', made with cargo about (spotify-core/about.toml)
+    ${CMAKE_CURRENT_SOURCE_DIR}/packaging/licenses/rust-crates.LICENSE)
+# material symbols, the icon font downloaded above
+if(SWIFTIFY_DOWNLOAD_ICON_FONT)
+    list(APPEND SWIFTIFY_THIRD_PARTY_LICENSES ${CMAKE_CURRENT_SOURCE_DIR}/packaging/licenses/material-symbols.LICENSE)
+endif()
+# the prebuilt downloads bundle qt, qtkeychain and qcoro, and their licences go
+# with them. a distro's package uses the system's and leaves them off
+option(SWIFTIFY_BUNDLED_QT "Install the licences of Qt, QtKeychain and QCoro, for a build that bundles them" OFF)
+if(SWIFTIFY_BUNDLED_QT)
+    configure_file(packaging/licenses/qt.NOTICE.in ${SWIFTIFY_LICENSE_DIRECTORY}/qt.NOTICE @ONLY)
+    list(APPEND SWIFTIFY_THIRD_PARTY_LICENSES
+        ${CMAKE_CURRENT_SOURCE_DIR}/packaging/licenses/qt.LICENSE
+        ${SWIFTIFY_LICENSE_DIRECTORY}/qt.NOTICE
+        ${CMAKE_CURRENT_SOURCE_DIR}/packaging/licenses/qtkeychain.LICENSE
+        ${CMAKE_CURRENT_SOURCE_DIR}/packaging/licenses/qcoro.LICENSE)
 endif()
 
 # --- the app ---------------------------------------------------------------------
@@ -422,6 +453,8 @@ if(APPLE)
     endif()
     set_source_files_properties(LICENSE PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
     target_sources(swiftify PRIVATE LICENSE)
+    set_source_files_properties(${SWIFTIFY_THIRD_PARTY_LICENSES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    target_sources(swiftify PRIVATE ${SWIFTIFY_THIRD_PARTY_LICENSES})
     set_target_properties(swiftify PROPERTIES
         MACOSX_BUNDLE ON
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/packaging/macos/Info.plist.in
@@ -455,6 +488,7 @@ install(TARGETS swiftify
 # windows zip carry it here and the app bundle in its resources
 if(NOT APPLE)
     install(FILES LICENSE DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/swiftify)
+    install(FILES ${SWIFTIFY_THIRD_PARTY_LICENSES} DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/swiftify)
 endif()
 if(NOT APPLE AND NOT WIN32)
     # the desktop entry's name is the wayland app id (see main.cpp), which is

@@ -217,6 +217,7 @@ build_dependency qcoro https://github.com/qcoro/qcoro.git v0.13.0 \
 cmake -S "$SOURCE" -B "$WORK/swiftify" "${common[@]}" \
     "-DSWIFTIFY_SHAPE_ATLAS_TOOL=$SHAPE_ATLAS" \
     "${RUST_CMAKE_ARGS[@]}" \
+    -DSWIFTIFY_BUNDLED_QT=ON \
     "-DCMAKE_INSTALL_PREFIX=$STAGE"
 cmake --build "$WORK/swiftify" --parallel "$JOBS"
 rm -rf "${STAGE:?}"
@@ -270,6 +271,10 @@ while :; do
 done
 
 [[ -f "$STAGE/share/licenses/swiftify/LICENSE" ]] || fail "the license is missing"
+for license in material-color-utilities.LICENSE rounded-polygon-qmljs.LICENSE material-symbols.LICENSE \
+    rust-crates.LICENSE qt.LICENSE qt.NOTICE qtkeychain.LICENSE qcoro.LICENSE; do
+    [[ -f "$STAGE/share/licenses/swiftify/$license" ]] || fail "$license is missing"
+done
 
 cat > "$BIN/qt.conf" <<'EOF'
 [Paths]

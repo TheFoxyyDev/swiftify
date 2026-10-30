@@ -84,7 +84,7 @@ build_dependency qcoro https://github.com/qcoro/qcoro.git v0.13.0 \
     -DUSE_QT_VERSION=6 -DQCORO_WITH_QTDBUS=OFF -DQCORO_WITH_QTWEBSOCKETS=OFF -DQCORO_WITH_QTQUICK=OFF \
     -DQCORO_WITH_QML=OFF -DQCORO_WITH_QTTEST=OFF -DQCORO_BUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF
 
-cmake -S "$SOURCE" -B "$WORK/swiftify" "${common[@]}" -DRust_CARGO_TARGET=aarch64-apple-darwin
+cmake -S "$SOURCE" -B "$WORK/swiftify" "${common[@]}" -DRust_CARGO_TARGET=aarch64-apple-darwin -DSWIFTIFY_BUNDLED_QT=ON
 cmake --build "$WORK/swiftify" --parallel "$JOBS"
 
 rm -rf "${APP:?}"
@@ -132,6 +132,10 @@ done < <(find "$APP" -type f -print0)
 [[ -f "$APP/Contents/PlugIns/platforms/libqcocoa.dylib" ]] || fail "the cocoa platform plugin is missing"
 [[ -d "$APP/Contents/Resources/qml/QtQuick" ]] || fail "qt's qml modules are missing"
 [[ -f "$APP/Contents/Resources/LICENSE" ]] || fail "the license is missing"
+for license in material-color-utilities.LICENSE rounded-polygon-qmljs.LICENSE material-symbols.LICENSE \
+    rust-crates.LICENSE qt.LICENSE qt.NOTICE qtkeychain.LICENSE qcoro.LICENSE; do
+    [[ -f "$APP/Contents/Resources/$license" ]] || fail "$license is missing"
+done
 
 # the dmg opens to the app beside a link to applications. hdiutil sometimes
 # finds the volume busy on ci, so it gets a few tries
