@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(Swiftify
-    VERSION 0.24.2
+    VERSION 0.24.3
     DESCRIPTION "A native Spotify client"
     LANGUAGES C CXX)
 
@@ -193,9 +193,15 @@ if(NOT TARGET Qt6::DBus)
 endif()
 if(NOT SWIFTIFY_SOLOIST)
     list(FILTER SWIFTIFY_SOURCES EXCLUDE REGEX "^src/soloist/")
-elseif(NOT SWIFTIFY_DESKTOP_INTEGRATION)
-    # routing soloist through swiftify records it with libpulse
-    list(FILTER SWIFTIFY_SOURCES EXCLUDE REGEX "^src/soloist/SoloistAudioRoute")
+else()
+    if(NOT SWIFTIFY_DESKTOP_INTEGRATION)
+        # routing soloist through swiftify records it with libpulse
+        list(FILTER SWIFTIFY_SOURCES EXCLUDE REGEX "^src/soloist/SoloistAudioRoute")
+    endif()
+    if(NOT WIN32)
+        # the visualizers hear soloist through a windows process loopback
+        list(FILTER SWIFTIFY_SOURCES EXCLUDE REGEX "^src/soloist/SoloistLoopback")
+    endif()
 endif()
 
 file(GLOB_RECURSE SWIFTIFY_QML CONFIGURE_DEPENDS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -303,7 +309,7 @@ target_link_libraries(swiftify_app PUBLIC
     spotify_core)
 
 if(WIN32)
-    target_link_libraries(swiftify_app PUBLIC Qt6::Widgets comctl32 dwmapi ole32 shell32 uuid runtimeobject)
+    target_link_libraries(swiftify_app PUBLIC Qt6::Widgets comctl32 dwmapi ole32 shell32 uuid runtimeobject mmdevapi)
 
     # older mingw-w64 headers (qt's bundled mingw 13.1, say) have no
     # SystemMediaTransportControls in windows.media.h; the media controls are

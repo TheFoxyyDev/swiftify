@@ -76,6 +76,10 @@ public:
     virtual void stopLiveBuffer() {}
     /// the rate live audio plays at without being resampled; 0 if unknown
     virtual quint32 liveOutputRate() const { return 0; }
+    /// hands the analyser interleaved stereo audio that something else plays
+    /// to the speakers, heard at `outputGain` of its full level; nothing of
+    /// it is played. may be called from any thread
+    virtual void analyseLive(const float * /*samples*/, qsizetype /*count*/, float /*outputGain*/) {}
 
     /// skips within what something else started on this core (a song picked
     /// in spotify on a phone, playing through a connect device), which goes

@@ -225,6 +225,8 @@ pub struct SpotifyCore {
     volume_normalization: Arc<AtomicBool>,
     /// shared with every sink this core builds, streaming and files alike.
     output_health: OutputHealth,
+    /// what `analyse_live` has gathered towards the spectrum's next run
+    live_analysis: Mutex<live_input::LiveAnalysis>,
 }
 
 impl Default for SpotifyCore {
@@ -253,6 +255,7 @@ impl SpotifyCore {
             local_playback_active: Arc::new(AtomicBool::new(false)),
             volume_normalization: Arc::new(AtomicBool::new(false)),
             output_health: OutputHealth::new(),
+            live_analysis: Mutex::new(live_input::LiveAnalysis::new()),
         }
     }
 
@@ -1156,6 +1159,14 @@ impl SpotifyCore {
 
     pub fn set_spectrum_enabled(&self, enabled: bool) {
         self.spectrum.set_enabled(enabled);
+    }
+
+    /// hands the spectrum audio another program plays to the speakers by
+    /// itself: interleaved stereo, at `output_gain` of its full level. only
+    /// the visualizers see it; nothing of it is played
+    pub fn analyse_live(&self, samples: &[f32], output_gain: f64) {
+        let mut analysis = self.live_analysis.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+        analysis.feed(&self.spectrum, samples, output_gain);
     }
 
     /// the switch lock guards no data, so a panic while it was held leaves

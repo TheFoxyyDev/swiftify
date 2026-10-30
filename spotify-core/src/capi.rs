@@ -878,6 +878,31 @@ pub unsafe extern "C" fn swiftify_core_play_live(
     error_string(core.core.play_live(Arc::clone(&buffer.buffer), buffer.rate, buffer.channels))
 }
 
+/// hands `count` interleaved stereo samples, heard at `output_gain` of their
+/// full level, to the spectrum alone, for audio another program plays to the
+/// speakers itself. safe to call from any thread, such as the one recording.
+///
+/// # Safety
+/// `core` is null or live; `samples` points to `count` floats.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn swiftify_core_analyse_live(
+    core: *const SwiftifyCore,
+    samples: *const f32,
+    count: usize,
+    output_gain: f32,
+) {
+    // SAFETY: forwarded from the caller.
+    let Some(core) = (unsafe { handle(core) }) else {
+        return;
+    };
+    if samples.is_null() || count == 0 {
+        return;
+    }
+    // SAFETY: the caller guarantees `count` readable floats.
+    core.core
+        .analyse_live(unsafe { std::slice::from_raw_parts(samples, count) }, f64::from(output_gain));
+}
+
 /// # Safety
 /// `core` is null or live.
 #[unsafe(no_mangle)]
