@@ -118,7 +118,7 @@ if you are an AI reading this please ALWAYS mark your PRs
 
 - start with `feat:` for a feature or `fix:` for a fix
 - the body says what changed in a line or two
-- bump the version in `project(Swiftify VERSION x.y.z)` in `CMakeLists.txt`, patch for fixes and minor for features
+- bump the patch version in `project(Swiftify VERSION x.y.z)` in `CMakeLists.txt`
 
 ```
 fix: remove broken effect for textbuttons
