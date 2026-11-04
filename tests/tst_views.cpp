@@ -3574,10 +3574,21 @@ private slots:
         QCOMPARE(rig.library.displayedPlaylistSongs()->at(1).durationMs, 180000);
         QCOMPARE(rig.library.displayedPlaylistSongs()->at(2).durationMs, 120000);
 
-        // Selecting a playlist resets sort to Playlist order and reversed to false
+        // Selecting the playlist restores its cached sort order and reversed state
         rig.library.selectPlaylist(playlist);
+        QCOMPARE(rig.library.playlistSortOrder(), LibraryStore::SortOrder::Duration);
+        QCOMPARE(rig.library.playlistSortReversed(), true);
+
+        // Selecting a new un-sorted playlist defaults to forward Playlist order
+        const Playlist otherPlaylist = rig.localFiles.createPlaylist(QStringLiteral("Other"), {}, {}, {});
+        rig.library.selectPlaylist(otherPlaylist);
         QCOMPARE(rig.library.playlistSortOrder(), LibraryStore::SortOrder::Playlist);
         QCOMPARE(rig.library.playlistSortReversed(), false);
+
+        // Switching back to the first playlist restores its cached reversed order
+        rig.library.selectPlaylist(playlist);
+        QCOMPARE(rig.library.playlistSortOrder(), LibraryStore::SortOrder::Duration);
+        QCOMPARE(rig.library.playlistSortReversed(), true);
     }
 
     void topBarSortMenuTogglesReverseAndArrow()
@@ -3694,6 +3705,48 @@ private slots:
         QCOMPARE(queue.at(0).name, QStringLiteral("Apple"));
         QCOMPARE(queue.at(1).name, QStringLiteral("Zebra"));
         QCOMPARE(rig.player.currentSong().name, QStringLiteral("Apple"));
+    }
+
+    void playlistSortOrderIsCachedAcrossRestarts()
+    {
+        Rig rig;
+        Song song1;
+        song1.uri = QStringLiteral("spotify:track:1");
+        song1.name = QStringLiteral("First");
+        song1.durationMs = 100000;
+        Song song2;
+        song2.uri = QStringLiteral("spotify:track:2");
+        song2.name = QStringLiteral("Second");
+        song2.durationMs = 200000;
+
+        Playlist playlist;
+        playlist.id = QStringLiteral("cached_list_1");
+        playlist.name = QStringLiteral("My Cached List");
+        playlist.uri = QStringLiteral("spotify:playlist:cached_list_1");
+
+        // Save songs in cache so the playlist can be loaded offline / on restart
+        SongListCache cache(rig.directory.filePath(QStringLiteral("song-lists")));
+        cache.save(playlist.id, {song1, song2});
+
+        rig.library.selectPlaylist(playlist);
+
+        // Reverse the playlist order
+        rig.library.togglePlaylistSortOrder(LibraryStore::SortOrder::Playlist);
+        QCOMPARE(rig.library.playlistSortOrder(), LibraryStore::SortOrder::Playlist);
+        QCOMPARE(rig.library.playlistSortReversed(), true);
+        QCOMPARE(rig.library.displayedPlaylistSongs()->count(), 2);
+        QCOMPARE(rig.library.displayedPlaylistSongs()->at(0).name, QStringLiteral("Second"));
+        QCOMPARE(rig.library.displayedPlaylistSongs()->at(1).name, QStringLiteral("First"));
+
+        // Simulate app restart by instantiating a new LibraryStore with the same cache path
+        LibraryStore restoredLibrary(&rig.session, &rig.settings, &rig.errors, nullptr,
+                                     rig.directory.filePath(QStringLiteral("song-lists")));
+        restoredLibrary.selectPlaylist(playlist);
+        QCOMPARE(restoredLibrary.playlistSortOrder(), LibraryStore::SortOrder::Playlist);
+        QCOMPARE(restoredLibrary.playlistSortReversed(), true);
+        QCOMPARE(restoredLibrary.displayedPlaylistSongs()->count(), 2);
+        QCOMPARE(restoredLibrary.displayedPlaylistSongs()->at(0).name, QStringLiteral("Second"));
+        QCOMPARE(restoredLibrary.displayedPlaylistSongs()->at(1).name, QStringLiteral("First"));
     }
 
     void views_data()

@@ -62,6 +62,9 @@ std::optional<QList<Song>> SongListCache::load(const QString &key) const
     if (root.value(QStringLiteral("format")).toInt() != kFormat) {
         return std::nullopt;
     }
+    if (!root.contains(QStringLiteral("songs"))) {
+        return std::nullopt;
+    }
     QList<Song> songs;
     const QJsonArray array = root.value(QStringLiteral("songs")).toArray();
     songs.reserve(array.size());
@@ -81,12 +84,65 @@ void SongListCache::save(const QString &key, const QList<Song> &songs) const
     for (const Song &song : songs) {
         array.append(song.toJson());
     }
+    QJsonObject root {{QStringLiteral("format"), kFormat}, {QStringLiteral("songs"), array}};
+
+    QFile existing(pathFor(key));
+    if (existing.open(QIODevice::ReadOnly)) {
+        const QJsonObject oldRoot = QJsonDocument::fromJson(existing.readAll()).object();
+        if (oldRoot.contains(QStringLiteral("sortOrder"))) {
+            root.insert(QStringLiteral("sortOrder"), oldRoot.value(QStringLiteral("sortOrder")));
+        }
+        if (oldRoot.contains(QStringLiteral("sortReversed"))) {
+            root.insert(QStringLiteral("sortReversed"), oldRoot.value(QStringLiteral("sortReversed")));
+        }
+    }
+
     QSaveFile file(pathFor(key));
     if (!file.open(QIODevice::WriteOnly)) {
         return;
     }
-    file.write(QJsonDocument(QJsonObject {{QStringLiteral("format"), kFormat}, {QStringLiteral("songs"), array}})
-                   .toJson(QJsonDocument::Compact));
+    file.write(QJsonDocument(root).toJson(QJsonDocument::Compact));
+    file.commit();
+}
+
+std::optional<SongListCache::PlaylistSort> SongListCache::loadSort(const QString &key) const
+{
+    QFile file(pathFor(key));
+    if (!file.open(QIODevice::ReadOnly)) {
+        return std::nullopt;
+    }
+    const QJsonObject root = QJsonDocument::fromJson(file.readAll()).object();
+    if (root.value(QStringLiteral("format")).toInt() != kFormat) {
+        return std::nullopt;
+    }
+    if (!root.contains(QStringLiteral("sortOrder")) && !root.contains(QStringLiteral("sortReversed"))) {
+        return std::nullopt;
+    }
+    return PlaylistSort {
+        root.value(QStringLiteral("sortOrder")).toInt(0),
+        root.value(QStringLiteral("sortReversed")).toBool(false)
+    };
+}
+
+void SongListCache::saveSort(const QString &key, int sortOrder, bool sortReversed) const
+{
+    QDir().mkpath(m_directory);
+    QJsonObject root;
+    QFile existing(pathFor(key));
+    if (existing.open(QIODevice::ReadOnly)) {
+        root = QJsonDocument::fromJson(existing.readAll()).object();
+    }
+    if (!root.contains(QStringLiteral("format"))) {
+        root.insert(QStringLiteral("format"), kFormat);
+    }
+    root.insert(QStringLiteral("sortOrder"), sortOrder);
+    root.insert(QStringLiteral("sortReversed"), sortReversed);
+
+    QSaveFile file(pathFor(key));
+    if (!file.open(QIODevice::WriteOnly)) {
+        return;
+    }
+    file.write(QJsonDocument(root).toJson(QJsonDocument::Compact));
     file.commit();
 }
 

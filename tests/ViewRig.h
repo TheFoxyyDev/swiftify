@@ -66,7 +66,7 @@ struct ViewRig {
     SpotifySession session {&core, &credentials, &network, &errors};
     PlaybackController player {&core, &session, &settings, &errors};
     DiscordPresence discord {&player, &settings};
-    LibraryStore library {&session, &settings, &errors};
+    LibraryStore library {&session, &settings, &errors, nullptr, directory.filePath(QStringLiteral("song-lists"))};
     AudioShaping sound {&core, &settings, &session};
     LocalLibrary localFiles {&settings, nullptr, directory.path()};
     AppController app {nullptr};

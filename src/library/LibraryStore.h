@@ -164,7 +164,8 @@ public:
     enum class SortOrder { Playlist, Title, Artist, Album, Duration };
     Q_ENUM(SortOrder)
 
-    LibraryStore(SpotifySession *session, Settings *settings, ErrorCenter *errors, QObject *parent = nullptr);
+    explicit LibraryStore(SpotifySession *session, Settings *settings, ErrorCenter *errors, QObject *parent = nullptr,
+                          const QString &songListCacheDirectory = {});
     ~LibraryStore() override;
 
     static LibraryStore *instance();
@@ -329,6 +330,7 @@ private:
     void refreshDisplayedSongs();
     void refreshRecommendations();
     void persistSearchHistory();
+    void persistPlaylistSort();
     void setSearchHistory(const QList<Song> &songs);
     void adjustPlaylistSongCount(const QString &id, int delta);
     void reportError(const QString &context, const QString &message);
@@ -420,7 +422,7 @@ private:
 
     RecentlyOpened<QList<Song>> m_openedPlaylists {8};
     /// the playlists' and saved songs' last loaded lists, kept across restarts
-    SongListCache m_songListCache {paths::cacheDirectory() + QStringLiteral("/song-lists")};
+    SongListCache m_songListCache;
     RecentlyOpened<QList<Song>> m_openedAlbums {8};
     RecentlyOpened<ArtistDetail> m_openedArtists {8};
 

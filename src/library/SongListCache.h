@@ -34,6 +34,11 @@ namespace swiftify {
 /// it is a cache: anything unreadable is treated as missing.
 class SongListCache {
 public:
+    struct PlaylistSort {
+        int sortOrder = 0;
+        bool sortReversed = false;
+    };
+
     /// keeps its files under `directory`, made when first written to
     explicit SongListCache(QString directory);
 
@@ -42,6 +47,9 @@ public:
     void remove(const QString &key) const;
     /// everything, as when the person signs out
     void clear() const;
+
+    std::optional<PlaylistSort> loadSort(const QString &key) const;
+    void saveSort(const QString &key, int sortOrder, bool sortReversed) const;
 
 private:
     QString pathFor(const QString &key) const;

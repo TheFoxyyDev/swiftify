@@ -125,11 +125,15 @@ bool LibraryStore::Destination::operator==(const Destination &other) const
     }
 }
 
-LibraryStore::LibraryStore(SpotifySession *session, Settings *settings, ErrorCenter *errors, QObject *parent)
+LibraryStore::LibraryStore(SpotifySession *session, Settings *settings, ErrorCenter *errors, QObject *parent,
+                           const QString &songListCacheDirectory)
     : QObject(parent)
     , m_session(session)
     , m_settings(settings)
     , m_errors(errors)
+    , m_songListCache(songListCacheDirectory.isEmpty()
+                          ? paths::cacheDirectory() + QStringLiteral("/song-lists")
+                          : songListCacheDirectory)
     , m_playlists(new PlaylistListModel(this))
     , m_pinnedPlaylists(new PlaylistListModel(this))
     , m_playlistSongs(new SongListModel(this))
@@ -422,6 +426,7 @@ void LibraryStore::setPlaylistSortOrder(SortOrder order)
     }
     m_sortOrder = order;
     m_sortReversed = false;
+    persistPlaylistSort();
     refreshDisplayedSongs();
     emit playlistViewChanged();
 }
@@ -432,6 +437,7 @@ void LibraryStore::setPlaylistSortReversed(bool reversed)
         return;
     }
     m_sortReversed = reversed;
+    persistPlaylistSort();
     refreshDisplayedSongs();
     emit playlistViewChanged();
 }
@@ -444,6 +450,7 @@ void LibraryStore::togglePlaylistSortOrder(SortOrder order)
         m_sortOrder = order;
         m_sortReversed = false;
     }
+    persistPlaylistSort();
     refreshDisplayedSongs();
     emit playlistViewChanged();
 }
@@ -451,8 +458,17 @@ void LibraryStore::togglePlaylistSortOrder(SortOrder order)
 void LibraryStore::togglePlaylistSortOrder()
 {
     m_sortReversed = !m_sortReversed;
+    persistPlaylistSort();
     refreshDisplayedSongs();
     emit playlistViewChanged();
+}
+
+void LibraryStore::persistPlaylistSort()
+{
+    const QString id = selectedPlaylistId();
+    if (!id.isEmpty()) {
+        m_songListCache.saveSort(id, static_cast<int>(m_sortOrder), m_sortReversed);
+    }
 }
 
 bool LibraryStore::canReorderPlaylist() const
@@ -641,8 +657,14 @@ void LibraryStore::selectPlaylist(const Playlist &playlist)
 {
     cancelDetailLoads();
     m_playlistFilterQuery.clear();
-    m_sortOrder = SortOrder::Playlist;
-    m_sortReversed = false;
+    const auto cachedSort = m_songListCache.loadSort(playlist.id);
+    if (cachedSort) {
+        m_sortOrder = static_cast<SortOrder>(cachedSort->sortOrder);
+        m_sortReversed = cachedSort->sortReversed;
+    } else {
+        m_sortOrder = SortOrder::Playlist;
+        m_sortReversed = false;
+    }
     m_errors->clear();
     // shown at once when it is already known, and refreshed underneath: a
     // playlist can be edited from anywhere.
