@@ -5,7 +5,6 @@ on:
     types: [closed]
     branches:
       - main
-      - dev/test-bump-action
 
 jobs:
   bump-version:
@@ -30,9 +29,11 @@ jobs:
             exit 1
           fi
 
-          # Check if the merged PR explicitly touched the VERSION line
-          if git diff HEAD^1 HEAD^2 -- "$CMAKE_FILE" | grep -E '^\+[[:space:]]*VERSION[[:space:]]+[0-9]+' >/dev/null 2>&1; then
-            echo "PR already updated VERSION in $CMAKE_FILE. Skipping automated bump."
+          # Skip if PR already updated the VERSION line
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          if git diff "$BASE_SHA" "$HEAD_SHA" -- "$CMAKE_FILE" | grep -E '^\+[[:space:]]*VERSION[[:space:]]+[0-9]+' >/dev/null 2>&1; then
+            echo "PR already touched VERSION in $CMAKE_FILE. Skipping automated bump."
             exit 0
           fi
 
@@ -52,23 +53,24 @@ jobs:
           RELEASE=${RELEASE:-0}
           FIX=${FIX:-0}
 
-          # Calculate new patch version
+          # Calculate bump
           NEW_FIX=$((FIX + 1))
           NEW_VERSION="${MAJOR}.${RELEASE}.${NEW_FIX}"
           NEW_TAG="v${NEW_VERSION}"
 
           echo "Bumping version: $CURRENT_VERSION -> $NEW_VERSION"
 
-          # Update only the VERSION line in CMakeLists.txt
+          # Replace in CMakeLists.txt
           sed -i -E "s/^([[:space:]]*VERSION[[:space:]]+)[0-9]+\.[0-9]+(\.[0-9]+)?/\1${NEW_VERSION}/" "$CMAKE_FILE"
 
-          # Git configuration
+          # Configure Git
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Commit, tag, and push back to branch
+          # Commit, tag, and push dynamically to whichever branch was the PR target
+          TARGET_BRANCH="${{ github.event.pull_request.base.ref || github.ref_name }}"
           git add "$CMAKE_FILE"
           git commit -m "chore: bump version to $NEW_TAG [skip ci]"
           git tag -a "$NEW_TAG" -m "Automated patch bump to $NEW_TAG"
 
-          git push origin main --follow-tags
+          git push origin "HEAD:${TARGET_BRANCH}" --follow-tags
