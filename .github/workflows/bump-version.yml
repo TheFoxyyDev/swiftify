@@ -5,6 +5,7 @@ on:
     types: [closed]
     branches:
       - main
+      - dev/test-bump-action
 
 jobs:
   bump-version:
