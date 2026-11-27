@@ -413,4 +413,3 @@ Swiftify was developed by [shred0s](https://github.com/shred0s) at [github.com/s
 ## license
 
 swiftify is licensed under the gnu gpl v3 or later, see [LICENSE](LICENSE)
-.
